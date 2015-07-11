@@ -43,8 +43,8 @@ static void create_shape(double radius)
 {
 	for(int i=0; i<SHAPE_POINTS; i++)
 	{
-		g_shape[i](0) = (sin(i*M_PI/(SHAPE_POINTS/2)) + (cos(i*M_PI/(SHAPE_POINTS/13))/13)) * radius;
-		g_shape[i](1) = (cos(i*M_PI/(SHAPE_POINTS/2)) - (sin(i*M_PI/(SHAPE_POINTS/17))/19)) * radius;
+		g_shape[i](0) = (sin(i*M_PI/(SHAPE_POINTS/2)) + (cos(i*M_PI/(SHAPE_POINTS/6))/7)) * radius;
+		g_shape[i](1) = (cos(i*M_PI/(SHAPE_POINTS/2)) - (sin(i*M_PI/(SHAPE_POINTS/9))/13)) * radius;
 		g_shape[i](2) = 0;
 	}
 }
@@ -75,7 +75,7 @@ static void emit_stl_vertex(const Vector3d &v1, const Vector3d &v2, const Vector
 	k1 = v2 - v1;
 	k2 = v3 - v1;
 	n = k1.cross(k2).normalized();
-	dump_vector(-n);
+	dump_vector(n);
 
 	/* dump vertexes */
 	dump_vector(v1);
@@ -86,20 +86,8 @@ static void emit_stl_vertex(const Vector3d &v1, const Vector3d &v2, const Vector
 	attribute_count = static_cast<uint16_t*>(add_stl(sizeof(*attribute_count)));
 	*attribute_count = 0;
 
-	/* dump normale vector for outside */
-	dump_vector(n);
-
-	/* dump vertexes */
-	dump_vector(v3+n);
-	dump_vector(v2+n);
-	dump_vector(v1+n);
-
-	/* output empty attribute field */
-	attribute_count = static_cast<uint16_t*>(add_stl(sizeof(*attribute_count)));
-	*attribute_count = 0;
-
 	/* increment triangle count */
-	g_triangles+=2;
+	g_triangles++;
 }
 
 static void emit_stl_layer(void)
