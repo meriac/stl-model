@@ -39,20 +39,23 @@ static void* add_stl(uint32_t bytes)
 	return res;
 }
 
-static void create_shape(void)
+static void create_shape(double radius)
 {
 	for(int i=0; i<SHAPE_POINTS; i++)
 	{
-		g_shape[i](0) = sin(i*M_PI/(SHAPE_POINTS/2));
-		g_shape[i](1) = cos(i*M_PI/(SHAPE_POINTS/2));
+		g_shape[i](0) = (sin(i*M_PI/(SHAPE_POINTS/2)) + (cos(i*M_PI/(SHAPE_POINTS/13))/13)) * radius;
+		g_shape[i](1) = (cos(i*M_PI/(SHAPE_POINTS/2)) - (sin(i*M_PI/(SHAPE_POINTS/17))/19)) * radius;
 		g_shape[i](2) = 0;
 	}
 }
 
-static void translate_shape(const Vector3d &translate)
+static void translate_shape(const Vector3d &translate, double progress_percent)
 {
+	Matrix3d m;
+	m = AngleAxisd(M_PI/(SHAPE_POINTS/2),Vector3d::UnitZ()) * Scaling(1+0.01*progress_percent);
+
 	for(int i=0; i<SHAPE_POINTS; i++)
-		g_target[i] = g_shape[i] + translate;
+		g_target[i] = (m * g_shape[i]) + translate;
 }
 
 static void dump_vector(const Vector3d &v)
@@ -112,17 +115,17 @@ int main (int argc, char *argv[])
 	g_target = g_vector_buffer[1];
 
 	/* create shape */
-	create_shape();
+	create_shape(SHAPE_POINTS/3);
 
 	/* emit sculpture */
 	for(i=0; i<SHAPE_POINTS; i++)
 	{
 		/* calculate normalized translation vector */
-		Vector3d translate(sin(i*M_PI/SHAPE_POINTS),cos(i*M_PI/SHAPE_POINTS),1);
+		Vector3d translate(0,0,1);
 		translate.normalize();
 
 		/* translate all points */
-		translate_shape(translate);
+		translate_shape(translate, ((double)i)/SHAPE_POINTS );
 		/* emit resulting layer */
 		emit_stl_layer();
 
