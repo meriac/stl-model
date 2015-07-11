@@ -8,10 +8,36 @@ using namespace std;
 
 #define SHAPE_SCALE 100
 #define SHAPE_POINTS 100
+#define MALLOC_STEPS (1024UL*1024)
+#define HEADER_SIZE (80+sizeof(g_triangles))
 
 uint32_t g_triangles;
-Vector3d g_shape[SHAPE_POINTS];
-Vector3d g_target[SHAPE_POINTS];
+
+Vector3d g_vector_buffer[2][SHAPE_POINTS];
+Vector3d *g_shape;
+Vector3d *g_target;
+
+uint8_t *g_buffer;
+uint32_t g_buffer_pos, g_buffer_size;
+
+static void* add_stl(uint32_t bytes)
+{
+	void* res;
+
+	if((g_buffer_pos+bytes) > (g_buffer_size))
+	{
+		g_buffer = (uint8_t*) realloc(g_buffer, MALLOC_STEPS);
+		if(!g_buffer)
+			return NULL;
+
+		g_buffer_size += MALLOC_STEPS;
+	}
+
+	res = g_buffer + g_buffer_pos;
+	g_buffer_pos += bytes;
+
+	return res;
+}
 
 static void create_shape(void)
 {
@@ -31,20 +57,21 @@ static void translate_shape(const Vector3d &translate)
 
 static void dump_vector(const Vector3d &v)
 {
-	float out[3];
+	float *out = static_cast<float*>(add_stl(sizeof(float)*3));
 
 	for(int i=0; i<3; i++)
-		out[i] = v(i);
-
-	fwrite(&out, sizeof(out), 1, stdout);
+		*out++ = v(i);
 }
 
 static void emit_stl_vertex(const Vector3d &v1, const Vector3d &v2, const Vector3d &v3)
 {
-	uint16_t attribute_count;
+	Vector3d k1, k2;
+	uint16_t *attribute_count;
 
 	/* dump normale vector */
-	dump_vector(v1.cross(v2));
+	k1 = v2 - v1;
+	k2 = v3 - v1;
+	dump_vector(k1.cross(k2).normalized());
 
 	/* dump vertexes */
 	dump_vector(v1);
@@ -52,8 +79,8 @@ static void emit_stl_vertex(const Vector3d &v1, const Vector3d &v2, const Vector
 	dump_vector(v3);
 
 	/* output empty attribute field */
-	attribute_count = 0;
-	fwrite(&attribute_count, sizeof(attribute_count), 1, stdout);
+	attribute_count = static_cast<uint16_t*>(add_stl(sizeof(*attribute_count)));
+	*attribute_count = 0;
 
 	/* increment triangle count */
 	g_triangles++;
@@ -71,15 +98,46 @@ static void emit_stl_layer(void)
 int main (int argc, char *argv[])
 {
 	int i;
+	Vector3d *tmp;
+	void* buf;
 
+	/* populate header */
+	buf = add_stl(HEADER_SIZE);
+	if(!buf)
+		return 1;
+	memset(buf, 0, HEADER_SIZE);
+
+	/* initial; buffer setup */
+	g_shape = g_vector_buffer[0];
+	g_target = g_vector_buffer[1];
+
+	/* create shape */
 	create_shape();
 
+	/* emit sculpture */
 	for(i=0; i<SHAPE_POINTS; i++)
 	{
+		/* calculate normalized translation vector */
 		Vector3d translate(sin(i*M_PI/SHAPE_POINTS),cos(i*M_PI/SHAPE_POINTS),1);
+		translate.normalize();
+
+		/* translate all points */
 		translate_shape(translate);
+		/* emit resulting layer */
 		emit_stl_layer();
+
+		/* move to next layer */
+		tmp = g_shape;
+		g_shape = g_target;
+		g_target = tmp;
 	}
+
+	/* copy triangle coutn  to header */
+	memcpy(g_buffer + 80, &g_triangles, sizeof(g_triangles));
+
+	/* dump whole file */
+	fwrite(g_buffer, g_buffer_pos, 1, stdout);
 
 	return 0;
 }
+
