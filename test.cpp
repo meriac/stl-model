@@ -221,16 +221,17 @@ int main (int argc, char *argv[])
 		translate_shape(Vector3d::UnitZ(), i);
 
 		/* emit resulting layer */
-		emit_stl_layer(i>3);
+		emit_stl_layer(i>=3);
+
+		/* emit inner bottom */
+		if(i==3)
+			emit_shaped_border(SHAPE_BORDER_WIDTH, BorderBottom);
 
 		/* move to next layer */
 		tmp = g_shape;
 		g_shape = g_target;
 		g_target = tmp;
 
-		/* emit inner bottom */
-		if(i==3)
-			emit_shaped_border(SHAPE_BORDER_WIDTH, BorderBottom);
 	}
 
 	/* emit top border */
