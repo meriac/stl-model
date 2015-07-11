@@ -12,7 +12,7 @@ typedef enum {BorderTop, BorderBottom} TBorderType;
 #define SHAPE_POINTS 100
 #define MALLOC_STEPS (1024UL*1024)
 #define HEADER_SIZE (80+sizeof(g_triangles))
-#define SHAPE_BORDER_WIDTH 5
+#define SHAPE_BORDER_WIDTH 3
 
 uint32_t g_triangles;
 
@@ -49,7 +49,7 @@ static void create_shape(double radius)
 {
 	for(int i=0; i<SHAPE_POINTS; i++)
 	{
-		g_shape[i](0) = (sin(i*M_PI/(SHAPE_POINTS/2)) + (cos(i*M_PI/(SHAPE_POINTS/6))/7)) * radius;
+		g_shape[i](0) = (sin(i*M_PI/(SHAPE_POINTS/2)) + (cos(i*M_PI/(SHAPE_POINTS/14))/17)) * radius;
 		g_shape[i](1) = (cos(i*M_PI/(SHAPE_POINTS/2)) - (sin(i*M_PI/(SHAPE_POINTS/9))/13)) * radius;
 		g_shape[i](2) = 0;
 	}
