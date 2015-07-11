@@ -75,7 +75,7 @@ static void dump_vector(const Vector3d &v)
 static void translate_inner_border(const Vector3d &vec, Vector3d &out)
 {
 	/* determine center */
-	Vector3d center(0, 0, g_shape[0](2));
+	Vector3d center(0, 0, vec(2));
 
 	Vector3d n = (center - vec).normalized();
 
