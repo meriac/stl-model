@@ -6,6 +6,8 @@
 using namespace Eigen;
 using namespace std;
 
+typedef enum {BorderTop, BorderBottom} TBorderType;
+
 #define SHAPE_SCALE 100
 #define SHAPE_POINTS 100
 #define MALLOC_STEPS (1024UL*1024)
@@ -108,7 +110,7 @@ static void emit_shaped_plane(void)
 		emit_stl_vertex(g_shape[i], g_shape[(i+1)%SHAPE_POINTS], center);
 }
 
-static void emit_shaped_border(double border)
+static void emit_shaped_border(double border, TBorderType type)
 {
 	Vector3d p[4], v1, v2;
 
@@ -126,8 +128,17 @@ static void emit_shaped_border(double border)
 		p[2] = p[0]+v1;
 		p[3] = p[1]+v2;
 
-		emit_stl_vertex(p[1],p[0],p[2]);
-		emit_stl_vertex(p[1],p[2],p[3]);
+		switch(type)
+		{
+			case BorderTop:
+				emit_stl_vertex(p[1],p[0],p[2]);
+				emit_stl_vertex(p[1],p[2],p[3]);
+				break;
+
+			case BorderBottom:
+				emit_stl_vertex(p[3],p[2],center);
+				break;
+		}
 	}
 }
 
@@ -162,6 +173,7 @@ int main (int argc, char *argv[])
 
 		/* translate all points */
 		translate_shape(translate, ((double)i)/SHAPE_POINTS );
+
 		/* emit resulting layer */
 		emit_stl_layer();
 
@@ -169,8 +181,14 @@ int main (int argc, char *argv[])
 		tmp = g_shape;
 		g_shape = g_target;
 		g_target = tmp;
+
+		/* emit inner bottom */
+		if(i==3)
+			emit_shaped_border(5, BorderBottom);
 	}
-	emit_shaped_border(3);
+
+	/* emit top border */
+	emit_shaped_border(5, BorderTop);
 
 	/* copy triangle coutn  to header */
 	memcpy(g_buffer + 80, &g_triangles, sizeof(g_triangles));
