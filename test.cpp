@@ -108,6 +108,29 @@ static void emit_shaped_plane(void)
 		emit_stl_vertex(g_shape[i], g_shape[(i+1)%SHAPE_POINTS], center);
 }
 
+static void emit_shaped_border(double border)
+{
+	Vector3d p[4], v1, v2;
+
+	/* determine center */
+	Vector3d center(0, 0, g_shape[0](2));
+
+	for(int i=0; i<SHAPE_POINTS; i++)
+	{
+		p[0] = g_shape[i];
+		p[1] = g_shape[(i+1)%SHAPE_POINTS];
+
+		v1 = (center-p[0]).normalized()*border;
+		v2 = (center-p[1]).normalized()*border;
+
+		p[2] = p[0]+v1;
+		p[3] = p[1]+v2;
+
+		emit_stl_vertex(p[1],p[0],p[2]);
+		emit_stl_vertex(p[1],p[2],p[3]);
+	}
+}
+
 int main (int argc, char *argv[])
 {
 	int i;
@@ -147,6 +170,7 @@ int main (int argc, char *argv[])
 		g_shape = g_target;
 		g_target = tmp;
 	}
+	emit_shaped_border(3);
 
 	/* copy triangle coutn  to header */
 	memcpy(g_buffer + 80, &g_triangles, sizeof(g_triangles));
