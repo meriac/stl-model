@@ -68,13 +68,14 @@ static void dump_vector(const Vector3d &v)
 
 static void emit_stl_vertex(const Vector3d &v1, const Vector3d &v2, const Vector3d &v3)
 {
-	Vector3d k1, k2;
+	Vector3d k1, k2, n;
 	uint16_t *attribute_count;
 
-	/* dump normale vector */
+	/* dump normale vector for inside */
 	k1 = v2 - v1;
 	k2 = v3 - v1;
-	dump_vector(k1.cross(k2).normalized());
+	n = k1.cross(k2).normalized();
+	dump_vector(-n);
 
 	/* dump vertexes */
 	dump_vector(v1);
@@ -85,8 +86,20 @@ static void emit_stl_vertex(const Vector3d &v1, const Vector3d &v2, const Vector
 	attribute_count = static_cast<uint16_t*>(add_stl(sizeof(*attribute_count)));
 	*attribute_count = 0;
 
+	/* dump normale vector for outside */
+	dump_vector(n);
+
+	/* dump vertexes */
+	dump_vector(v3+n);
+	dump_vector(v2+n);
+	dump_vector(v1+n);
+
+	/* output empty attribute field */
+	attribute_count = static_cast<uint16_t*>(add_stl(sizeof(*attribute_count)));
+	*attribute_count = 0;
+
 	/* increment triangle count */
-	g_triangles++;
+	g_triangles+=2;
 }
 
 static void emit_stl_layer(void)
