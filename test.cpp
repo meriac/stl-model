@@ -99,6 +99,15 @@ static void emit_stl_layer(void)
 	}
 }
 
+static void emit_shaped_plane(void)
+{
+	/* determine center */
+	Vector3d center(0, g_shape[0](2), 0);
+
+	for(int i=0; i<SHAPE_POINTS; i++)
+		emit_stl_vertex(g_shape[i], g_shape[(i+1)%SHAPE_POINTS], center);
+}
+
 int main (int argc, char *argv[])
 {
 	int i;
@@ -117,6 +126,9 @@ int main (int argc, char *argv[])
 
 	/* create shape */
 	create_shape(SHAPE_POINTS/3);
+
+	/* emit bottom */
+	emit_shaped_plane();
 
 	/* emit sculpture */
 	for(i=0; i<SHAPE_POINTS; i++)
