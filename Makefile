@@ -1,4 +1,4 @@
-TARGETS:=vase.stl
+TARGETS:=vase.stl marble-run.stl
 CPPFLAGS:=`pkg-config eigen3 --cflags` -Wall -Werror
 TARGET_BINS:=$(TARGETS:.stl=.run)
 
