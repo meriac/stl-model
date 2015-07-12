@@ -88,8 +88,9 @@ static void create_shape(double radius)
 static void translate_shape(const Vector3d &translate, int index)
 {
 	Matrix3d m;
-	/* scale shape depending on height along Z-axis */
-	m = AngleAxisd(M_PI/(SHAPE_POINTS/2),Vector3d::UnitZ()) * Scaling(1+0.01*(((double)index)/SHAPE_POINTS));
+	/* rotate and scale shape depending on height along Z-axis */
+	m =   AngleAxisd(M_PI/(SHAPE_POINTS/2),Vector3d::UnitZ())
+		* Scaling(1+0.01*(((double)index)/SHAPE_POINTS));
 
 	/* apply scaling matrix to all shape points */
 	for(int i=0; i<SHAPE_POINTS; i++)
