@@ -48,10 +48,12 @@ Vector3d *g_target;
 uint8_t *g_buffer;
 uint32_t g_buffer_pos, g_buffer_size;
 
+/* create buffer for binary STL */
 static void* add_stl(uint32_t bytes)
 {
 	void* res;
 
+	/* allocate more memory in output if needed */
 	if((g_buffer_pos+bytes) > (g_buffer_size))
 	{
 		g_buffer = (uint8_t*) realloc(g_buffer, g_buffer_size+MALLOC_STEPS);
@@ -64,7 +66,9 @@ static void* add_stl(uint32_t bytes)
 		g_buffer_size += MALLOC_STEPS;
 	}
 
+	/* return allocated buffer */
 	res = g_buffer + g_buffer_pos;
+	/* increment position in buffer for next allocation */
 	g_buffer_pos += bytes;
 
 	return res;
@@ -72,6 +76,7 @@ static void* add_stl(uint32_t bytes)
 
 static void create_shape(double radius)
 {
+	/* create simple extrusion shape - a wobbly circle */
 	for(int i=0; i<SHAPE_POINTS; i++)
 	{
 		g_shape[i](0) = (sin(i*M_PI/(SHAPE_POINTS/2)) + (cos(i*M_PI/(SHAPE_POINTS/14))/17)) * radius;
@@ -83,16 +88,20 @@ static void create_shape(double radius)
 static void translate_shape(const Vector3d &translate, int index)
 {
 	Matrix3d m;
+	/* scale shape depending on height along Z-axis */
 	m = AngleAxisd(M_PI/(SHAPE_POINTS/2),Vector3d::UnitZ()) * Scaling(1+0.01*(((double)index)/SHAPE_POINTS));
 
+	/* apply scaling matrix to all shape points */
 	for(int i=0; i<SHAPE_POINTS; i++)
 		g_target[i] = (m * g_shape[i]) + translate;
 }
 
 static void dump_vector(const Vector3d &v)
 {
+	/* get space for 3 gloatsi n output */
 	float *out = static_cast<float*>(add_stl(sizeof(*out)*3));
 
+	/* dump three floats in binary format */
 	for(int i=0; i<3; i++)
 		*out++ = v(i);
 }
@@ -102,8 +111,10 @@ static void translate_inner_border(const Vector3d &vec, Vector3d &out)
 	/* determine center */
 	Vector3d center(0, 0, vec(2));
 
+	/* calculate normale vector towards center */
 	Vector3d n = (center - vec).normalized();
 
+	/* move outer point to inner surface border */
 	out = vec + (n*SHAPE_BORDER_WIDTH);
 }
 
@@ -167,9 +178,11 @@ static void emit_stl_layer(bool border)
 		target2 = g_target[(i+1)%SHAPE_POINTS];
 		shape2 = g_shape[(i+1)%SHAPE_POINTS];
 
+		/* emit outer surface */
 		emit_stl_vertex(g_shape[i], g_target[i], target2);
 		emit_stl_vertex(g_shape[i], target2, shape2);
 
+		/* emit inner surface */
 		if(border)
 		{
 			emit_stl_border(target2,  g_target[i], g_shape[i]);
@@ -262,7 +275,7 @@ int main (int argc, char *argv[])
 	/* emit top border */
 	emit_shaped_border(SHAPE_BORDER_WIDTH, BorderTop);
 
-	/* copy triangle coun  to header */
+	/* copy triangle count to header */
 	memcpy(g_buffer + 80, &g_triangles, sizeof(g_triangles));
 
 	/* dump whole file */
