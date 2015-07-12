@@ -28,12 +28,13 @@
 #include "stl-helper.h"
 
 #define SHAPE_POINTS 42
-#define MARBLE_RUN_WALL 5
-#define MARBLE_RUN_RADIUS 100
+#define MARBLE_RUN_WALL 2
+#define MARBLE_RUN_RADIUS 150
 #define MARBLE_RUN_RESOLUTION 300
-#define MARBLE_RUN_SEGMENT_HEIGHT (30)
+#define MARBLE_RUN_SEGMENT_HEIGHT (24)
 
 Vector3d g_vector_buffer[2][SHAPE_POINTS];
+Vector3d g_vector_inner[2][SHAPE_POINTS];
 Vector3d *g_shape;
 Vector3d *g_target;
 
@@ -83,6 +84,28 @@ static void emit_stl_layer(bool inner)
 	}
 }
 
+static void emit_cap(Vector3d *inner, Vector3d *outer, bool start)
+{
+	Vector3d inner2, outer2;
+
+	for(int i=0; i<SHAPE_POINTS; i++)
+	{
+		inner2 = inner[(i+1)%SHAPE_POINTS];
+		outer2 = outer[(i+1)%SHAPE_POINTS];
+
+		if(start)
+		{
+			emit_stl_vertex(outer2, outer[i], inner[i]);
+			emit_stl_vertex(inner2, outer2, inner[i]);
+		}
+		else
+		{
+			emit_stl_vertex(inner[i], outer[i], outer2);
+			emit_stl_vertex(inner[i], outer2, inner2);
+		}
+	}
+}
+
 static void emit_spiral(bool inner)
 {
 	Vector3d *tmp;
@@ -99,6 +122,12 @@ static void emit_spiral(bool inner)
 		MARBLE_RUN_SEGMENT_HEIGHT/2
 	);
 
+	/* remember start */
+	if(inner)
+		memcpy(g_vector_inner[0], g_shape, sizeof(g_vector_inner[0]));
+	else
+		emit_cap(g_vector_inner[0], g_shape, true);
+
 	/* emit sculpture */
 	translate = Vector3d::UnitZ()*(MARBLE_RUN_SEGMENT_HEIGHT)/MARBLE_RUN_RESOLUTION;
 	for(i=0; i<(6*MARBLE_RUN_RESOLUTION); i++)
@@ -114,6 +143,12 @@ static void emit_spiral(bool inner)
 		g_shape = g_target;
 		g_target = tmp;
 	}
+
+	/* remember end */
+	if(inner)
+		memcpy(g_vector_inner[1], g_shape, sizeof(g_vector_inner[1]));
+	else
+		emit_cap(g_vector_inner[1], g_shape, false);
 }
 
 int main (int argc, char *argv[])
