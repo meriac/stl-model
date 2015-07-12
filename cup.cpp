@@ -209,7 +209,7 @@ int main (int argc, char *argv[])
 	g_target = g_vector_buffer[1];
 
 	/* create shape */
-	create_shape(SHAPE_POINTS/3);
+	create_shape(SHAPE_POINTS/2.5);
 
 	/* emit bottom */
 	emit_shaped_plane();
@@ -245,5 +245,3 @@ int main (int argc, char *argv[])
 
 	return 0;
 }
-
-

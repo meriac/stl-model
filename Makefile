@@ -1,14 +1,18 @@
-TARGET=test
+TARGETS:=cup.stl
 CPPFLAGS:=`pkg-config eigen3 --cflags` -Wall -Werror
+TARGET_BINS:=$(TARGETS:.stl=.run)
 
-all: $(TARGET).stl
+all: $(TARGET_BINS) $(TARGETS)
 
-$(TARGET).stl: $(TARGET)
+%.stl: %.run
 	./$^ > $@
+
+%.run: %.cpp
+	$(CXX) $^ $(CPPFLAGS) -o $@
 
 install-fc:
 	sudo yum install eigen3-devel:
 
 clean:
-	rm -f $(TARGET) $(TARGET).stl
+	rm -f $(TARGET_BINS) $(TARGETS)
 
