@@ -139,7 +139,10 @@ static void emit_spiral(bool inner)
 	translate = Vector3d::UnitZ()*(MARBLE_RUN_SEGMENT_HEIGHT+MARBLE_RUN_WALL)/MARBLE_RUN_RESOLUTION;
 	for(i=0; i<(6*MARBLE_RUN_RESOLUTION); i++)
 	{
-			mod = sin(i*M_PI/(((i / ((MARBLE_RUN_RESOLUTION)/10)) % 4)+1))/7;
+		if(inner)
+			mod = sin(i*M_PI/(((i / ((MARBLE_RUN_RESOLUTION)/10)) % 4)+1.5))/7;
+		else
+			mod = 0;
 
 		/* translate all points */
 		translate_shape(translate, mod);
