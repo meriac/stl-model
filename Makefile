@@ -1,4 +1,4 @@
-TARGETS:=cup.stl
+TARGETS:=vase.stl
 CPPFLAGS:=`pkg-config eigen3 --cflags` -Wall -Werror
 TARGET_BINS:=$(TARGETS:.stl=.run)
 
