@@ -6,7 +6,7 @@ Render weird shapes algorithmically for 3D printing into STL binary format. The 
 
 Tested under Fedora Linux 22 - please use
 ```bash
-make install-c
+make install-fc
 ```
 to install dependencies.
 
