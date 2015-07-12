@@ -1,3 +1,28 @@
+/***************************************************************
+ *
+ * Create a paremetriced STL file of a drinkinging cup for
+ * 3D-printing. Cup shape consists of multiple overlaid sine
+ * waves and is twisted around the Z-axis.
+ *
+ * Copyright 2015 Milosch Meriac <milosch.meriac.com>
+ *
+ ***************************************************************/
+
+/*
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published
+ by the Free Software Foundation; version 3.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program; if not, write to the Free Software Foundation,
+ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
 #include <stdio.h>
 #include <stdint.h>
 #include <Eigen/Core>
