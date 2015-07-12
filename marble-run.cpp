@@ -29,9 +29,9 @@
 
 #define SHAPE_POINTS 42
 #define MARBLE_RUN_WALL 2
-#define MARBLE_RUN_RADIUS 150
+#define MARBLE_RUN_RADIUS 60
 #define MARBLE_RUN_RESOLUTION 300
-#define MARBLE_RUN_SEGMENT_HEIGHT (24)
+#define MARBLE_RUN_SEGMENT_HEIGHT (20)
 
 Vector3d g_vector_buffer[2][SHAPE_POINTS];
 Vector3d g_vector_inner[2][SHAPE_POINTS];
@@ -118,8 +118,8 @@ static void emit_spiral(bool inner)
 
 	/* create shape */
 	create_shape(inner ?
-		((MARBLE_RUN_SEGMENT_HEIGHT/2)-MARBLE_RUN_WALL) :
-		MARBLE_RUN_SEGMENT_HEIGHT/2
+		MARBLE_RUN_SEGMENT_HEIGHT/2 :
+		MARBLE_RUN_SEGMENT_HEIGHT/2+MARBLE_RUN_WALL
 	);
 
 	/* remember start */
@@ -129,7 +129,7 @@ static void emit_spiral(bool inner)
 		emit_cap(g_vector_inner[0], g_shape, true);
 
 	/* emit sculpture */
-	translate = Vector3d::UnitZ()*(MARBLE_RUN_SEGMENT_HEIGHT)/MARBLE_RUN_RESOLUTION;
+	translate = Vector3d::UnitZ()*(MARBLE_RUN_SEGMENT_HEIGHT+MARBLE_RUN_WALL)/MARBLE_RUN_RESOLUTION;
 	for(i=0; i<(6*MARBLE_RUN_RESOLUTION); i++)
 	{
 		/* translate all points */
