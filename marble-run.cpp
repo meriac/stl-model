@@ -30,7 +30,7 @@
 #define SHAPE_POINTS 42
 #define MARBLE_RUN_WALL 2
 #define MARBLE_RUN_RADIUS 60
-#define MARBLE_RUN_RESOLUTION 300
+#define MARBLE_RUN_RESOLUTION 1000
 #define MARBLE_RUN_SEGMENT_HEIGHT (20)
 
 Vector3d g_vector_buffer[2][SHAPE_POINTS];
@@ -49,15 +49,21 @@ static void create_shape(double diameter)
 	}
 }
 
-static void translate_shape(const Vector3d &translate)
+static void translate_shape(const Vector3d &translate, double modulation)
 {
+	Vector3d mod;
+
 	/* rotate and scale shape depending on height along Z-axis */
 	Matrix3d m;
 	m = AngleAxisd(M_PI/(MARBLE_RUN_RESOLUTION/2),Vector3d::UnitZ());
 
+	/* calculate modulation vector */
+	mod = Vector3d(g_shape[0](0), g_shape[0](1), 0);
+	mod = mod.normalized()*modulation + translate;
+
 	/* apply scaling matrix to all shape points */
 	for(int i=0; i<SHAPE_POINTS; i++)
-		g_target[i] = (m * g_shape[i]) + translate;
+		g_target[i] = (m * g_shape[i]) + mod;
 }
 
 static void emit_stl_layer(bool inner)
@@ -108,6 +114,7 @@ static void emit_cap(Vector3d *inner, Vector3d *outer, bool start)
 
 static void emit_spiral(bool inner)
 {
+	double mod;
 	Vector3d *tmp;
 	Vector3d translate;
 	int i;
@@ -132,8 +139,10 @@ static void emit_spiral(bool inner)
 	translate = Vector3d::UnitZ()*(MARBLE_RUN_SEGMENT_HEIGHT+MARBLE_RUN_WALL)/MARBLE_RUN_RESOLUTION;
 	for(i=0; i<(6*MARBLE_RUN_RESOLUTION); i++)
 	{
+			mod = sin(i*M_PI/(((i / ((MARBLE_RUN_RESOLUTION)/10)) % 4)+1))/7;
+
 		/* translate all points */
-		translate_shape(translate);
+		translate_shape(translate, mod);
 
 		/* emit resulting layer */
 		emit_stl_layer(inner);
