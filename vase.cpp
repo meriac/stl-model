@@ -1,8 +1,9 @@
 /***************************************************************
  *
- * Create a paremetriced STL file of a drinkinging cup for
- * 3D-printing. Cup shape consists of multiple overlaid sine
- * waves and is twisted around the Z-axis.
+ * Create a paremetric STL binary 3D-printing model of a vase
+ *
+ * The Cup shape consists of multiple overlaid sine waves and is
+ * twisted around the Z-axis.
  *
  * Copyright 2015 Milosch Meriac <milosch.meriac.com>
  *
@@ -23,56 +24,17 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-
-using namespace Eigen;
-using namespace std;
+#include "stl-helper.h"
 
 typedef enum {BorderTop, BorderBottom} TBorderType;
 
 #define SHAPE_SCALE 100
 #define SHAPE_POINTS 100
-#define MALLOC_STEPS (1024UL*1024)
-#define HEADER_SIZE (80+sizeof(g_triangles))
 #define SHAPE_BORDER_WIDTH 3
-
-uint32_t g_triangles;
 
 Vector3d g_vector_buffer[2][SHAPE_POINTS];
 Vector3d *g_shape;
 Vector3d *g_target;
-
-uint8_t *g_buffer;
-uint32_t g_buffer_pos, g_buffer_size;
-
-/* create buffer for binary STL */
-static void* add_stl(uint32_t bytes)
-{
-	void* res;
-
-	/* allocate more memory in output if needed */
-	if((g_buffer_pos+bytes) > (g_buffer_size))
-	{
-		g_buffer = (uint8_t*) realloc(g_buffer, g_buffer_size+MALLOC_STEPS);
-		if(!g_buffer)
-		{
-			perror("Error: Failed to reallocate memory\n");
-			exit(1);
-		}
-
-		g_buffer_size += MALLOC_STEPS;
-	}
-
-	/* return allocated buffer */
-	res = g_buffer + g_buffer_pos;
-	/* increment position in buffer for next allocation */
-	g_buffer_pos += bytes;
-
-	return res;
-}
 
 static void create_shape(double radius)
 {
@@ -97,16 +59,6 @@ static void translate_shape(const Vector3d &translate, int index)
 		g_target[i] = (m * g_shape[i]) + translate;
 }
 
-static void dump_vector(const Vector3d &v)
-{
-	/* get space for 3 gloatsi n output */
-	float *out = static_cast<float*>(add_stl(sizeof(*out)*3));
-
-	/* dump three floats in binary format */
-	for(int i=0; i<3; i++)
-		*out++ = v(i);
-}
-
 static void translate_inner_border(const Vector3d &vec, Vector3d &out)
 {
 	/* determine center */
@@ -117,29 +69,6 @@ static void translate_inner_border(const Vector3d &vec, Vector3d &out)
 
 	/* move outer point to inner surface border */
 	out = vec + (n*SHAPE_BORDER_WIDTH);
-}
-
-static void emit_stl_vertex(const Vector3d &v1, const Vector3d &v2, const Vector3d &v3)
-{
-	Vector3d k1, k2;
-	uint16_t *attribute_count;
-
-	/* dump normale vector for outside */
-	k1 = v2 - v1;
-	k2 = v3 - v1;
-	dump_vector(k1.cross(k2).normalized());
-
-	/* dump vertexes */
-	dump_vector(v1);
-	dump_vector(v2);
-	dump_vector(v3);
-
-	/* output empty attribute field */
-	attribute_count = static_cast<uint16_t*>(add_stl(sizeof(*attribute_count)));
-	*attribute_count = 0;
-
-	/* increment triangle count */
-	g_triangles++;
 }
 
 void emit_stl_border(const Vector3d &v1, const Vector3d &v2, const Vector3d &v3)
@@ -235,13 +164,9 @@ int main (int argc, char *argv[])
 {
 	int i;
 	Vector3d *tmp;
-	void* buf;
 
-	/* populate header */
-	buf = add_stl(HEADER_SIZE);
-	if(!buf)
-		return 1;
-	memset(buf, 0, HEADER_SIZE);
+	/* emit STL header */
+	dump_header();
 
 	/* initial; buffer setup */
 	g_shape = g_vector_buffer[0];
@@ -276,11 +201,8 @@ int main (int argc, char *argv[])
 	/* emit top border */
 	emit_shaped_border(SHAPE_BORDER_WIDTH, BorderTop);
 
-	/* copy triangle count to header */
-	memcpy(g_buffer + 80, &g_triangles, sizeof(g_triangles));
-
-	/* dump whole file */
-	fwrite(g_buffer, g_buffer_pos, 1, stdout);
+	/* emit full stl file on stdout */
+	dump_stl(stdout);
 
 	return 0;
 }
