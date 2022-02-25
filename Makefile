@@ -11,7 +11,7 @@ all: $(TARGET_BINS) $(TARGETS)
 	$(CXX) $^ $(CPPFLAGS) -o $@
 
 install-fc:
-	sudo yum install eigen3-devel:
+	sudo dnf install eigen3-devel
 
 clean:
 	rm -f $(TARGET_BINS) $(TARGETS)

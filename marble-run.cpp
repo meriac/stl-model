@@ -131,7 +131,7 @@ static void emit_spiral(bool inner)
 
 	/* remember start */
 	if(inner)
-		memcpy(g_vector_inner[0], g_shape, sizeof(g_vector_inner[0]));
+		memcpy(&g_vector_inner[0], g_shape, sizeof(g_vector_inner[0]));
 	else
 		emit_cap(g_vector_inner[0], g_shape, true);
 
@@ -158,7 +158,7 @@ static void emit_spiral(bool inner)
 
 	/* remember end */
 	if(inner)
-		memcpy(g_vector_inner[1], g_shape, sizeof(g_vector_inner[1]));
+		memcpy(&g_vector_inner[1], g_shape, sizeof(g_vector_inner[1]));
 	else
 		emit_cap(g_vector_inner[1], g_shape, false);
 }
